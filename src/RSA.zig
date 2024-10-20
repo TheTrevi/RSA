@@ -1,4 +1,17 @@
 const std = @import("std");
+const math = std.math;
+
+
+pub fn cryptMessage(allocator:std.mem.Allocator, msg: []const u8, keys: [2]u128) ![]u128 {
+    var encrypt = try allocator.alloc(u128, msg.len);
+    
+    // converti ogni byte del messaggio in una grandezza numerica e applica RSA
+    for (msg, 0..) |byte, i| {
+        const value: u128 = @intCast(@as(u128, byte)); 
+        encrypt[i] = math.pow(u128, value, keys[0]) % keys[1]; // cifratura RSA: c = m^e % n
+    }
+    return encrypt;
+}
 
 pub fn getKeys(allocator: std.mem.Allocator, n:u64, difference: u64) ![2][2]u128 {
     const rand = std.crypto.random;

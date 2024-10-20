@@ -12,7 +12,12 @@ pub fn main() !void {
     cronometro.start();
     
     const keys = try RSA.getKeys(allocator, 300, 30);
-    
     std.debug.print("Generating keys took: {} ms\n", .{cronometro.elapsedTime()});
-    std.debug.print("public: {}, {} -- private: {}, {} ms\n", .{keys[0][0],keys[0][1],keys[1][0],keys[1][1]});
+
+    const messaggio = "ciao come va"[0..];
+
+    const mes = try RSA.cryptMessage(allocator, messaggio, keys[0]);
+    defer allocator.free(mes);
+
+    std.log.info("Messaggio criptato: {}\n", .{mes});
 }
