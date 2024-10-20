@@ -1,5 +1,46 @@
 const std = @import("std");
 
+pub fn getKeys(allocator: std.mem.Allocator, n:u64, difference: u64) ![2][2]u128 {
+    const rand = std.crypto.random;
+
+    const primes = try getPrimes(allocator, n);
+    defer allocator.free(primes);
+
+
+    var firstPrime: u64 = undefined;
+    var secondPrime: u64 = undefined;
+
+    
+    while (true){    
+        firstPrime = rand.intRangeAtMost(u64, 0, primes.len-1);
+        secondPrime = rand.intRangeAtMost(u64, firstPrime+1, primes.len-1);
+        if (primes[secondPrime] - primes[firstPrime] > difference) break;
+    }
+
+    const key = primes[firstPrime] * primes[secondPrime];
+    const maximum = (primes[firstPrime]-1) * (primes[secondPrime]-1);
+    
+    std.log.debug("firstPrime: {}, secondPrime: {}\n", .{primes[firstPrime],primes[secondPrime]});
+    
+    var e = rand.intRangeAtMost(u128, 3, maximum-1);
+    while (maximum%e == 0) {
+        e = rand.intRangeAtMost(u128, 3, maximum-1);
+    }
+    
+    var d: u128 = maximum+1;
+    while (true) {
+        if (d%e == 0) {break;}
+        else d += maximum;
+    }
+    d = d/e;
+
+    const publicKEY = [2]u128{e,key};
+    const privateKEY  = [2]u128{d, key};
+
+    return [2][2]u128{publicKEY, privateKEY};
+    
+}
+
 pub fn getPrimes(allocator: std.mem.Allocator, n: u64) ![]u64 {
     var primes = try allocator.alloc(bool, @intCast(@as(usize, n+1)));
     defer allocator.free(primes);

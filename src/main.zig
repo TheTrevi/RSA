@@ -8,12 +8,11 @@ var cronometro = time.Cronometro.init();
 pub const log_level: std.log.Level = .info;
 
 pub fn main() !void {
-    const n: u64 = 10000000;
-    // const dif = 10000;
+
     cronometro.start();
     
-    const primes = try RSA.getPrimes(allocator, n);
-    defer allocator.free(primes);
+    const keys = try RSA.getKeys(allocator, 300, 30);
     
-    std.debug.print("Generating primes took: {} ms\n", .{cronometro.elapsedTime()});
+    std.debug.print("Generating keys took: {} ms\n", .{cronometro.elapsedTime()});
+    std.debug.print("public: {}, {} -- private: {}, {} ms\n", .{keys[0][0],keys[0][1],keys[1][0],keys[1][1]});
 }
