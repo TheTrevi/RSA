@@ -29,7 +29,7 @@ fn readInput() !?[]u8 {
 pub fn main() !void {
 
     cronometro.start();
-    const keys = try RSA.getKeys(allocator, 200, 120);
+    const keys = try RSA.getKeys(allocator, 300000, 120);
     std.log.debug("Generating keys took: {} ms\n", .{cronometro.elapsedTime()});
     std.log.debug("keys: {any}, {any}, {any}\n", .{keys[0][0], keys[1][1], keys[1][0]});
 
