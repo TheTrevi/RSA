@@ -2,18 +2,19 @@ const std = @import("std");
 const math = std.math;
 
 
-fn mod_exp(base: u128, exp: u128, mod: u128) u128 {
+pub fn mod_exp(base: u128, exp: u128, mod: u128) u128 {
     var result: u128 = 1;
     var b: u128 = base % mod;
     var e: u128 = exp;
 
     while (e > 0) {
-        if (e % 2 == 1) {
+        if ((e & 1) == 1) {
             result = (result * b) % mod;
         }
         b = (b * b) % mod;
-        e = e / 2; // Integer division
+        e >>= 1;
     }
+    
     return result;
 }
 
@@ -28,14 +29,22 @@ fn mod_exp(base: u128, exp: u128, mod: u128) u128 {
         return slice;
     }
 
-    pub fn rsa_decrypt(message: []const u128, e: u128, n: u128, alloc: std.mem.Allocator) ![]u128 {
+pub fn rsa_decrypt(encrypted: []const u128, d: u128, n: u128, alloc: std.mem.Allocator) ![]u8 {
+    var slice = try alloc.alloc(u8, encrypted.len);
+    var i: u32 = 0;
 
-    var slice = try alloc.alloc(u128, message.len);
-    var i:u32 = 0;
-    for (message) |c| {
-        slice[i] = @intCast(mod_exp(c, e, n));
-        i += 1;
+    for (encrypted) |c| {
+    const decrypted_value = mod_exp(c, d, n);
+    std.debug.print("c: {}, d: {}, n: {}, decrypted_value: {}\n", .{c, d, n, decrypted_value});
+
+    if (decrypted_value > @as(u128,@intCast(255))) {
+        return error.ValueOutOfRange; // Handle the error appropriately
     }
+
+    slice[i] = @intCast(decrypted_value);
+    i += 1;
+}
+
     return slice;
 }
 
@@ -69,17 +78,17 @@ pub fn getKeys(allocator: std.mem.Allocator, n:u64, difference: u64) ![2][2]u128
         e += 2;
     }
     
-    var prova = try extended_gcd(e, maximum);
+    const prova = extended_gcd(e, maximum);
+
+    var d = prova[1];
+
+    d = @mod(d, maximum);
 
 
-
-
-    if (prova<0) prova *= -1;
-
-    const d:u128 = maximum-@as(u128,@intCast(prova));
+    // const d:u128 = maximum-@as(u128,@intCast(prova));
 
     const publicKEY = [2]u128{e,key};
-    const privateKEY  = [2]u128{d, key};
+    const privateKEY  = [2]u128{@intCast(d), key};
 
     return [2][2]u128{publicKEY, privateKEY};
     
@@ -87,32 +96,19 @@ pub fn getKeys(allocator: std.mem.Allocator, n:u64, difference: u64) ![2][2]u128
 
 
 
+fn extended_gcd(a: i256, b: i256) [3]i256 {
 
-fn extended_gcd(a: i256, b: i256) !i256 {
-    var x0: i256 = 1;
-    var x1: i256 = 0;
-    var y0: i256 = 0;
-    var y1: i256 = 1;
-    var a_temp = a;
-    var b_temp = b;
-
-    while (b_temp != 0) {
-        const quotient = @divTrunc(a_temp , b_temp);
-        const temp_b = b_temp;
-        b_temp = @rem(a_temp , b_temp);
-        a_temp = temp_b;
-
-        const temp_x = x0 - quotient * x1;
-        x0 = x1;
-        x1 = temp_x;
-
-        const temp_y = y0 - quotient * y1;
-        y0 = y1;
-        y1 = temp_y;
+    if (a == 0){
+        return [_]i256{b,0,1};
     }
 
-    return x0;
+    const pp = extended_gcd(@mod(b,a), a);
+
+    const temp0 = pp[2] - (@divTrunc(b, a) * pp[1]);
+    return [_]i256{pp[0], temp0, pp[1]};
+
 }
+
 
 
 

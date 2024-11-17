@@ -10,9 +10,9 @@ pub const log_level: std.log.Level = .info;
 pub fn main() !void {
 
     cronometro.start();
-    const keys = try RSA.getKeys(allocator, 300, 30);
+    const keys = try RSA.getKeys(allocator, 200, 120);
     std.log.debug("Generating keys took: {} ms\n", .{cronometro.elapsedTime()});
-    std.log.debug("keys: {any}, {any}\n", .{keys[0][0], keys[1][1]});
+    std.log.debug("keys: {any}, {any}, {any}\n", .{keys[0][0], keys[1][1], keys[1][0]});
 
     const messaggio = "come stai, tanto tempo fa"[0..];
 
