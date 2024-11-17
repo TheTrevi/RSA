@@ -34,16 +34,10 @@ pub fn rsa_decrypt(encrypted: []const u128, d: u128, n: u128, alloc: std.mem.All
     var i: u32 = 0;
 
     for (encrypted) |c| {
-    const decrypted_value = mod_exp(c, d, n);
-    std.debug.print("c: {}, d: {}, n: {}, decrypted_value: {}\n", .{c, d, n, decrypted_value});
-
-    if (decrypted_value > @as(u128,@intCast(255))) {
-        return error.ValueOutOfRange; // Handle the error appropriately
+        const decrypted_value = mod_exp(c, d, n);
+        slice[i] = @intCast(decrypted_value);
+        i += 1;
     }
-
-    slice[i] = @intCast(decrypted_value);
-    i += 1;
-}
 
     return slice;
 }
